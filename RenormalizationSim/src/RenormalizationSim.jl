@@ -161,8 +161,31 @@ function run_full_simulation()
     )
     vline!(plot3, [m_squared_phys], linestyle=:dash, color=:black, label="Physical Mass Pole")
 
+#書き加え始め。 --- グラフ4: 三次元プロパゲータプロット ---
+    p_vals = range(0.0, stop=100.0, length=50)
+    Λ_vals = range(10.0, stop=1000.0, length=50)
+    propagator_surface = [begin
+        sigma = calculate_sigma(m_squared_phys, lambda_coupling, Λ)
+        sigma_deriv = calculate_sigma_derivative(m_squared_phys, lambda_coupling, Λ)
+        m0_sq = m_squared_phys - sigma
+        Z = 1.0 / (1.0 - sigma_deriv)
+        D_inv = p² - m0_sq - sigma + im * epsilon
+        abs2(Z / D_inv)
+    end for Λ in Λ_vals, p² in p_vals]
 
-    final_plot = plot(plot1, plot2, plot3, layout=(3, 1), size=(800, 1200))
+    
+plot4 = surface(
+        p_vals, Λ_vals, propagator_surface,
+        xlabel="Momentum Squared p² (GeV²)",
+        ylabel="Cutoff Energy Λ (GeV)",
+        zlabel="|D'(p)|²",
+        title="Graph 4: 3D Dressed Propagator",
+        color=:viridis
+    )
+#書き加え終わり
+
+
+    final_plot = plot(plot1, plot2, plot3, plot4, layout=(4, 1), size=(800, 1800))
     savefig(final_plot, "renormalization_plots_advanced.png")
     println("\nPlots saved to 'renormalization_plots_advanced.png'")
 end
